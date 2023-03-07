@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset='utf8'>
+  <script src='https://evercraft.co/lib/everxyz-1.0.8.js'></script>
+  <style>
+    #hello {
+      width: 600px;
+      height: 600px;
+    }
+
+    #list {
+      width: 200px;
+      position: fixed;
+      right: 0;
+      top: 0;
+    }
+
+    #list li {
+      cursor: pointer;
+      line-height: 24px;
+      list-style: none;
+    }
+
+    #list li:hover {
+      background-color: #e7e7e7;
+
+    }
+  </style>
+</head>
+
+<body>
+  <div id="hello"></div>
+  <ul id="list">
+
+  </ul>
+  <script>
+    const options = {
+      showProgress: true,
+    }
+
+    let render = evercad.render3d('#hello', [{
+      path: './top.STL',  // 该地址为当前html文件的同级目录文件
+      name: 'Propeller.stl'
+    }], options);
+    const dropBox = document.querySelector("body");
+    dropBox.addEventListener("dragenter", dragEnter, false);
+    dropBox.addEventListener("dragover", dragOver, false);
+    dropBox.addEventListener("drop", drop, false);
+
+    function dragEnter(e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+
+    function dragOver(e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    var list = []
+    function drop(e) {
+      // 当文件拖拽到dropBox区域时,可以在该事件取到files
+      const files = e.dataTransfer.files;
+      e.stopPropagation();
+      e.preventDefault();
+      list = []
+      for (let i = 0; i < files.length; i++) {
+        let file = files[i];
+        let reader = new FileReader();
+        let rs = reader.readAsDataURL(file);
+        let blob = null;
+        reader.onload = (e) => {
+          blob = e.target.result
+          list.push({ name: file.name, blob })
+          if (i == files.length - 1) {
+            renderFileList()
+            renderModelByIndex(0)
+          }
+        }
+      }
+
+    }
+    function renderFileList() {
+
+      const html = list.map((item, index) => {
+        return `<li index="${index}">${index+1}.${item.name}</li>`
+      }).join('')
+      document.querySelector("#list").innerHTML = html;
+
+    }
+    document.querySelector("#list").addEventListener("click", function (e) {
+      renderModelByIndex(e.target.getAttribute("index"))
+    })
+    function renderModelByIndex(i) {
+      if (list[i]) {
+        renderModel(list[i].blob, list[i].name)
+        document.title=list[i].name
+      }
+    }
+    function renderModel(path, name) {
+      // render && render.destroy()
+      // if(/\.stl/i.test(name)){
+      render = evercad.render3d('#hello', [{
+        path,  // 该地址为当前html文件的同级目录文件
+        name
+      }], options);
+      // }else{
+      // render = evercad.renderStp('#hello', [{
+      //   path,  // 该地址为当前html文件的同级目录文件
+      //   name
+      // }], options);
+      // }
+    }
+
+
+  </script>
+</body>
+
+</html>
